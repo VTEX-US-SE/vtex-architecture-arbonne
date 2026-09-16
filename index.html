@@ -663,7 +663,8 @@
             <div class="module-grid cols-4">
               <div class="node node-module"><strong>Checkout</strong><span class="hint">Guest, split pay, 3DS UK/PL</span></div>
               <div class="node node-module"><strong>Subscriptions</strong><span class="hint">ReplenishMe / Autoship</span></div>
-              <div class="node node-module"><strong>Order / ASM Queues</strong><span class="hint">12+ queues, 20+ reason codes · primary CSR console</span></div>
+              <div class="node node-module"><strong>Order</strong><span class="hint">Order lifecycle · Feed/Hook to EBS</span></div>
+              <div class="node node-module node-custom"><strong>ASM Queues</strong><span class="hint">12+ queues, 20+ reason codes · primary CSR console</span></div>
               <div class="node node-module"><strong>Inventory Sync</strong><span class="hint">Real-time OOS/backorder</span></div>
               <div class="node node-module">
                 <strong>Event Fulfillment</strong>
@@ -914,8 +915,8 @@
         <div class="iface-card" id="REF-30">
           <div class="id-col"><span class="tag">REF-30</span></div>
           <div class="body">
-            <h4>CSR console → Order / ASM Queues</h4>
-            <p class="ref">VTEX: <strong>Order / ASM Queues</strong> — native ASM is the primary CSR console (12+ queues, 20+ reason codes)</p>
+            <h4>CSR console → ASM Queues</h4>
+            <p class="ref">VTEX: <strong>ASM Queues</strong> — native ASM is the primary CSR console (12+ queues, 20+ reason codes)</p>
             <div class="calls">
               <span class="call call-note">Impersonation (CSR/admin view-as-shopper) was removed from initial scope — "shop as customer" support for CSR is currently out of scope / open</span>
               <span class="call call-open">Native ASM/back-office screens will not reflect Exigo's true commission/genealogy state unless the bridging layer flagged in REF-21 is built — mandatory scope for CSR to have accurate data, not a nice-to-have</span>
@@ -959,7 +960,7 @@
           <div class="id-col"><span class="tag">REF-22</span></div>
           <div class="body">
             <h4>Oracle EBS — fulfillment, WMS, inventory</h4>
-            <p class="ref">VTEX: <strong>Inventory Sync</strong> · <strong>Order / ASM Queues</strong></p>
+            <p class="ref">VTEX: <strong>Inventory Sync</strong> · <strong>Order</strong></p>
             <div class="calls">
               <span class="call call-out">POST → Order for distribution/fulfillment (VTEX Order Feed/Hook — Feed must be active before the Hook can be registered)</span>
               <span class="call call-in">← Inventory availability, backorder cancellation → auto-generated RMA back to commerce platform</span>
