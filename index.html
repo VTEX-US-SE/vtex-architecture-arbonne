@@ -521,7 +521,6 @@
     .call-out { color: var(--out); background: #FFFAEB; border-color: #FEDF89; }
     .call-in { color: var(--in); background: #ECFDF3; border-color: #A6F4C5; }
     .call-note { color: var(--ink-soft); background: var(--surface); border-color: var(--border); font-weight: 500; }
-    .call-open { color: #B54708; background: #FFFAEB; border-color: #FEDF89; font-weight: 700; }
 
     .glossary { margin-top: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; box-shadow: var(--shadow); }
     .glossary h2 { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
@@ -636,13 +635,13 @@
                 <div class="node node-module"><strong>Intelligent Search</strong><span class="hint">Replaces Solr</span></div>
                 <div class="node node-module"><strong>CMS &amp; Localization</strong><span class="hint">6 markets · 4+ languages</span></div>
                 <div class="node node-module"><strong>Commercial Policies</strong><span class="hint">4-tier pricing per country — Guest baked into the policy + PC/VIP/IC tables</span></div>
-                <div class="node node-module"><strong>CX Platform</strong><span class="hint">Pre-order consultant content assist (images/audio) + post-purchase CSR return/change flows <span class="call call-open" style="font-size:8.5px;padding:2px 5px;">open</span></span></div>
+                <div class="node node-module"><strong>CX Platform</strong><span class="hint">Pre-order consultant content assist (images/audio) + post-purchase CSR return/change flows</span></div>
               </div>
             </div>
             <div class="group">
               <div class="group-title">Direct-Selling / MLM Commerce</div>
               <div class="module-grid cols-3">
-                <div class="node node-module node-custom"><strong>Sponsor Attribution</strong><span class="hint">Replicated sites <span class="call call-open" style="font-size:8.5px;padding:2px 5px;">open</span></span></div>
+                <div class="node node-module node-custom"><strong>Sponsor Attribution</strong><span class="hint">Replicated sites</span></div>
                 <div class="node node-module node-custom"><strong>Guest Attribution</strong><span class="hint">"Pending Assignment" CID=1</span></div>
                 <div class="node node-module node-custom"><strong>Consultant Locator (Custom)</strong><span class="hint">Search IC by zip/name/rank</span></div>
                 <div class="node node-module node-custom"><strong>Onboarding Flow</strong><span class="hint">3 enrollment paths (Guest, PC, IC)</span></div>
@@ -681,7 +680,7 @@
               <div class="connector-grid">
                 <div class="node node-connector node-custom"><strong>Vertex</strong><span class="hint">Tax engine</span></div>
                 <div class="node node-connector node-custom"><strong>Signifyd</strong><span class="hint">Fraud · OOTB via Antifraud Provider Protocol</span></div>
-                <div class="node node-connector node-external"><strong>BlueSnap</strong><span class="hint">PSP · tokenized vaulting <span class="call call-open" style="font-size:8px;padding:1px 4px;">evaluate</span></span></div>
+                <div class="node node-connector node-external"><strong>BlueSnap</strong><span class="hint">PSP · tokenized vaulting</span></div>
                 <div class="node node-connector node-custom"><strong>Klarna</strong><span class="hint">BNPL · OOTB payment method</span></div>
                 <div class="node node-connector node-custom"><strong>SmartyStreets</strong><span class="hint">Address validation</span></div>
                 <div class="node node-connector node-custom"><strong>Apple / Google Pay</strong><span class="hint">+ BLIK candidate (PL)</span></div>
@@ -717,7 +716,6 @@
             <div class="integ-bar">
               <strong>Boomi</strong>
               <span class="hint">Kept as orchestration / iPaaS layer for corporate systems</span>
-              <span class="call call-open" style="font-size:9px;">ownership model open</span>
             </div>
           </div>
 
@@ -754,7 +752,7 @@
             <div class="node node-enterprise node-external">
               <span class="source-line">↓ AWS Redshift / Fivetran / dbt</span>
               <strong>Salesforce Marketing Cloud</strong>
-              <span class="hint">Marketing/messaging — fed by the warehouse pipeline, not Boomi. No direct VTEX interface. <span class="call call-open" style="font-size:9px;">open</span></span>
+              <span class="hint">Marketing/messaging — fed by the warehouse pipeline, not Boomi. No direct VTEX interface.</span>
             </div>
           </div>
         </div>
@@ -828,8 +826,8 @@
               <span class="call call-out">→ Card auth / capture, $0-auth vaulting (Create Vaulted Shopper) for saved cards &amp; ReplenishMe tokenized billing</span>
               <span class="call call-in">← Auth/capture result, chargeback events (via Chargeback911)</span>
               <span class="call call-note">Up to 3 saved cards, up to 6 payment methods split per order</span>
-              <span class="call call-open">VTEX Subscriptions requires the PSP to support tokenized-card + merchant-initiated recurring charges on VTEX's connector specifically — confirm BlueSnap's VTEX connector supports this before assuming it works out of the box; if not, a second PSP would be needed for ReplenishMe only</span>
-              <span class="call call-open">Evaluate whether BlueSnap needs to remain a dedicated, separately-maintained PSP long-term, or whether VTEX's native payment stack / another certified gateway can consolidate this role</span>
+              <span class="call call-note">VTEX Subscriptions requires the PSP to support tokenized-card + merchant-initiated recurring charges on VTEX's connector specifically — confirm BlueSnap's VTEX connector supports this before assuming it works out of the box; if not, a second PSP would be needed for ReplenishMe only</span>
+              <span class="call call-note">Evaluate whether BlueSnap needs to remain a dedicated, separately-maintained PSP long-term, or whether VTEX's native payment stack / another certified gateway can consolidate this role</span>
             </div>
           </div>
         </div>
@@ -867,7 +865,7 @@
             <div class="calls">
               <span class="call call-out">→ Klarna required in all 6 markets; Apple Pay/Google Pay/CC everywhere</span>
               <span class="call call-note">BLIK (Poland) requested as an open enhancement beyond current method set</span>
-              <span class="call call-open">Confirm whether Klarna processes directly as a native VTEX payment method or is routed through BlueSnap as the underlying gateway</span>
+              <span class="call call-note">Confirm whether Klarna processes directly as a native VTEX payment method or is routed through BlueSnap as the underlying gateway</span>
             </div>
           </div>
         </div>
@@ -912,7 +910,7 @@
             <p class="ref">VTEX: <strong>ASM Queues</strong> — native ASM is the primary CSR console (12+ queues, 20+ reason codes)</p>
             <div class="calls">
               <span class="call call-note">Impersonation (CSR/admin view-as-shopper) was removed from initial scope — "shop as customer" support for CSR is currently out of scope / open</span>
-              <span class="call call-open">Native ASM/back-office screens will not reflect Exigo's true commission/genealogy state unless the bridging layer flagged in REF-21 is built — mandatory scope for CSR to have accurate data, not a nice-to-have</span>
+              <span class="call call-note">Native ASM/back-office screens will not reflect Exigo's true commission/genealogy state unless the bridging layer flagged in REF-21 is built — mandatory scope for CSR to have accurate data, not a nice-to-have</span>
             </div>
           </div>
         </div>
@@ -943,8 +941,8 @@
               <span class="call call-out">POST → Order, RV/QV/CV (calculated in the commerce system at order time, proportionally reduced by promos), returns/clawback data</span>
               <span class="call call-in">← Consultant status (active/terminated) pushed to profile — no real-time call during shopping</span>
               <span class="call call-note">Data flows to Exigo every ~2 minutes; final statement only after Exigo's month-end close; payout via HyperWallet (US/CA, SFTP), HSBC (AU/NZ/PL), Bank of America (UK)</span>
-              <span class="call call-open">Exigo itself may be a separate RFP track — ownership/scope split to confirm</span>
-              <span class="call call-open">Native ASM/back-office screens will not reflect Exigo's true commission/genealogy state unless a bridging layer is built — treat this as mandatory scope, not a nice-to-have, or CSR-facing data will be misleading</span>
+              <span class="call call-note">Exigo itself may be a separate RFP track — ownership/scope split to confirm</span>
+              <span class="call call-note">Native ASM/back-office screens will not reflect Exigo's true commission/genealogy state unless a bridging layer is built — treat this as mandatory scope, not a nice-to-have, or CSR-facing data will be misleading</span>
             </div>
           </div>
         </div>
@@ -957,7 +955,7 @@
             <div class="calls">
               <span class="call call-out">POST → Order for distribution/fulfillment (VTEX Order Feed/Hook — Feed must be active before the Hook can be registered)</span>
               <span class="call call-in">← Inventory availability, backorder cancellation → auto-generated RMA back to commerce platform</span>
-              <span class="call call-open">Formal OMS system-of-record boundary vs. EBS-as-fulfillment-only is unconfirmed</span>
+              <span class="call call-note">Formal OMS system-of-record boundary vs. EBS-as-fulfillment-only is unconfirmed</span>
             </div>
           </div>
         </div>
@@ -969,7 +967,7 @@
             <p class="ref">Previously: order data → GL file generation. S/4HANA is now marked decommissioned in this architecture.</p>
             <div class="calls">
               <span class="call call-note">Legacy flow was: → Order/financial data feed for GL posting</span>
-              <span class="call call-open">Replacement system of record for GL/financial reporting integration not yet defined</span>
+              <span class="call call-note">Replacement system of record for GL/financial reporting integration not yet defined</span>
             </div>
           </div>
         </div>
@@ -981,7 +979,7 @@
             <p class="ref">Marketing/messaging — abandoned cart, campaigns. Fed downstream of the data warehouse, not from the commerce platform or Boomi directly.</p>
             <div class="calls">
               <span class="call call-out">→ Daily batch today: customer/order/product data, pushed from the warehouse pipeline</span>
-              <span class="call call-open">Real-time event capability for abandoned-cart/beacon tracking not yet formalized — would need to flow through the AWS Redshift/Fivetran/dbt pipeline since there's no direct VTEX↔SFMC interface</span>
+              <span class="call call-note">Real-time event capability for abandoned-cart/beacon tracking not yet formalized — would need to flow through the AWS Redshift/Fivetran/dbt pipeline since there's no direct VTEX↔SFMC interface</span>
             </div>
           </div>
         </div>
@@ -1006,7 +1004,7 @@
             <div class="calls">
               <span class="call call-out">→ Push to S3/Redshift (scheduled export or managed data share)</span>
               <span class="call call-in">← Full historical order/customer data exposed at go-live; near-real-time sales metrics, hourly/daily refresh for other attributes</span>
-              <span class="call call-open">CSR-only vs. buyer-facing exposure of historical data still undecided</span>
+              <span class="call call-note">CSR-only vs. buyer-facing exposure of historical data still undecided</span>
             </div>
           </div>
         </div>
