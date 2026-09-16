@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arbonne International — VTEX Commerce Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --vtex-pink: #F71963;
+      --vtex-pink-dark: #E31C58;
+      --vtex-pink-soft: #FFE5EE;
+      --vtex-pink-muted: #FFF0F5;
+      --vtex-pink-border: #F9B4CB;
+      --ink: #142032;
+      --ink-muted: #4A5568;
+      --ink-soft: #718096;
+      --surface: #FFFFFF;
+      --surface-alt: #F7F8FA;
+      --channel: #3D4451;
+      --border: #D0D5DD;
+      --border-strong: #98A2B3;
+      --arrow: #667085;
+      --tag: #6941C6;
+      --tag-bg: #F4F0FF;
+      --tag-border: #D6BBFB;
+      --integ: #E8EEF5;
+      --integ-border: #B8C7D9;
+      --in: #027A48;
+      --out: #B54708;
+      --decom: #B42318;
+      --decom-bg: #FEF3F2;
+      --decom-border: #FDA29B;
+      --shadow: 0 1px 2px rgba(20, 32, 50, 0.06), 0 4px 12px rgba(20, 32, 50, 0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(247, 25, 99, 0.08), transparent),
+        linear-gradient(180deg, #FAFBFC 0%, #F0F2F5 100%);
+      min-height: 100vh;
+      padding: 40px 20px 64px;
+      line-height: 1.45;
+    }
+
+    .page { max-width: 1560px; margin: 0 auto; }
+
+    header.page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--vtex-pink);
+      flex-wrap: wrap;
+    }
+
+    .vtex-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--vtex-pink);
+      margin-bottom: 8px;
+    }
+
+    h1 { font-size: clamp(22px, 3vw, 28px); font-weight: 700; letter-spacing: -0.02em; }
+    .subtitle { font-size: 13px; color: var(--ink-muted); max-width: 720px; margin-top: 6px; }
+
+    .badges { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+    .meta-badge {
+      flex-shrink: 0;
+      background: var(--vtex-pink-muted);
+      border: 1px solid var(--vtex-pink-border);
+      color: var(--vtex-pink-dark);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .meta-badge span {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+
+    .version-note {
+      font-size: 12px;
+      color: var(--ink-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+    }
+    .version-note strong { color: var(--vtex-pink-dark); }
+
+    /* —— Shared —— */
+    .node {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    /* Click-to-mark-as-discussed */
+    .node, .cdn-bar, .integ-bar {
+      cursor: pointer;
+      position: relative;
+      transition: filter 0.15s ease, opacity 0.15s ease;
+    }
+    .node:hover, .cdn-bar:hover, .integ-bar:hover { filter: brightness(0.94); }
+    .node.discussed, .cdn-bar.discussed, .integ-bar.discussed {
+      filter: brightness(0.55) saturate(0.8);
+      opacity: 0.92;
+    }
+    .node.discussed:hover, .cdn-bar.discussed:hover, .integ-bar.discussed:hover { filter: brightness(0.5) saturate(0.8); }
+    .node.discussed::after, .cdn-bar.discussed::after, .integ-bar.discussed::after {
+      content: "✓";
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.6);
+    }
+
+    .progress-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--ink-soft);
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      margin-bottom: 16px;
+    }
+    .progress-toolbar strong { color: var(--ink-muted); }
+    #resetProgressBtn {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--vtex-pink-dark);
+      background: var(--vtex-pink-muted);
+      border: 1px solid var(--vtex-pink-border);
+      border-radius: 7px;
+      padding: 5px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #resetProgressBtn:hover { background: var(--vtex-pink-soft); }
+    .node strong { display: block; font-size: 12.5px; font-weight: 600; }
+    .node .hint {
+      display: block;
+      font-size: 10.5px;
+      color: var(--ink-soft);
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    .phases {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+      margin-top: 6px;
+    }
+    .phase {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid;
+      line-height: 1.2;
+    }
+    .phase-mvp { color: #027A48; background: #ECFDF3; border-color: #A6F4C5; }
+    .phase-ns { color: #175CD3; background: #EFF8FF; border-color: #B2DDFF; }
+
+    /* Pink = VTEX-native / built on VTEX. Gray = Arbonne's existing third-party systems (kept). Red-dashed = being decommissioned. */
+    .node-internal { background: var(--surface) !important; border-color: var(--vtex-pink) !important; }
+    .node-internal strong { color: var(--vtex-pink-dark); }
+    .node-internal .hint { color: var(--ink-soft); opacity: 1; }
+    .node-external { background: var(--surface-alt) !important; border-color: var(--border-strong) !important; }
+    .node-external strong { color: var(--ink-muted); }
+    .node-external .hint { color: var(--ink-soft); opacity: 0.9; }
+    .node-decommissioned {
+      background: var(--decom-bg) !important;
+      border: 1.5px dashed var(--decom-border) !important;
+      opacity: 0.85;
+    }
+    .node-decommissioned strong { color: var(--decom); text-decoration: line-through; }
+    .node-decommissioned .hint { color: var(--decom); opacity: 0.85; }
+
+    .layer-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--tag);
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      padding: 3px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    /* —— Diagram —— */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .main-grid { display: flex; flex-direction: column; gap: 10px 12px; }
+
+    .channels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .node-channel { background: var(--channel); border-color: var(--channel); color: #fff; }
+    .node-channel strong { color: #fff; }
+    .node-channel .hint { color: rgba(255,255,255,0.72); }
+
+    .flow-down {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 34px;
+      margin: 4px 0;
+      position: relative;
+    }
+    .flow-down .shaft { width: 2px; flex: 1; background: var(--arrow); }
+    .flow-down .head {
+      width: 0; height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid var(--arrow);
+    }
+    .flow-down .head-up {
+      width: 0; height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 8px solid var(--arrow);
+    }
+    .flow-down .tag { position: absolute; left: 50%; top: 50%; transform: translate(10px, -50%); }
+
+    .cdn-stack { display: flex; flex-direction: column; gap: 8px; }
+    .cdn-bar {
+      color: #fff;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.03em;
+      padding: 12px 18px;
+      border-radius: 10px;
+      width: 100%;
+    }
+    .cdn-bar span { display: inline; font-size: 10.5px; font-weight: 500; opacity: 0.9; margin-left: 8px; letter-spacing: 0; }
+    .cdn-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cdn-line + .cdn-line { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.25); }
+    .cdn-bar.vtex { background: var(--vtex-pink); box-shadow: 0 4px 14px rgba(247, 25, 99, 0.35); }
+
+    .core {
+      background: var(--surface-alt);
+      border: 1.5px solid var(--vtex-pink-border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .core-title { text-align: center; font-size: 14px; font-weight: 700; margin-bottom: 4px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+    .core-title em { font-style: normal; color: var(--vtex-pink); }
+
+    .fe-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .fe-row .node-module { min-height: 58px; }
+    .groups { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; align-items: stretch; }
+    .group { background: var(--surface); border: 1.5px solid var(--vtex-pink-border); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; }
+    .group-title { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--vtex-pink); margin-bottom: 8px; }
+    .module-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; align-content: stretch; grid-auto-rows: 1fr; }
+    .node-module {
+      background: var(--vtex-pink);
+      border-color: var(--vtex-pink-dark);
+      color: #fff;
+      min-width: 0;
+      padding: 8px 6px;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .node-module strong { font-size: 11px; color: #fff; }
+    .node-module .hint { color: rgba(255,255,255,0.85); font-size: 9.5px; }
+    .module-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .module-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .module-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .module-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+    /* Pink border only, white fill = a customization on top of VTEX (not OOTB) */
+    .node-module.node-custom { background: var(--surface); border: 1.5px solid var(--vtex-pink); }
+    .node-module.node-custom strong { color: var(--vtex-pink-dark); }
+    .node-module.node-custom .hint { color: var(--ink-soft); }
+
+    /* Small "custom on top of the storefront" callout nested inside the Storefront (FastStore) box */
+    .storefront-sub { margin-top: 8px; display: flex; justify-content: center; }
+    .sub-custom {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface);
+      border: 1.5px solid var(--vtex-pink-border);
+      color: var(--vtex-pink-dark);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .sub-custom em { font-style: normal; font-weight: 600; font-size: 8.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .storefront-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+    .feature-box { background: var(--surface-alt); border: 1px solid var(--vtex-pink-border); border-radius: 8px; padding: 7px 8px; font-size: 11px; font-weight: 600; color: var(--vtex-pink-dark); text-align: center; }
+    .feature-box.pink { background: var(--vtex-pink); border-color: var(--vtex-pink-dark); color: #fff; }
+
+    /* Pink nested sub-badge — for a pill sitting on top of an already-pink parent module box */
+    .sub-pink {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--vtex-pink-dark);
+      border: 1.5px solid rgba(255,255,255,0.55);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .sub-pink em { font-style: normal; font-weight: 600; font-size: 8.5px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .connector-block { margin-top: 4px; }
+    .connector-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .connector-wrap { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 10px; }
+    .node-connector { background: var(--surface-alt); min-height: 66px; }
+    /* OOTB / VTEX-certified native connector (still kept vendor, but no custom work needed) */
+    .node-connector.node-native { background: var(--vtex-pink); border-color: var(--vtex-pink-dark); }
+    .node-connector.node-native strong { color: #fff; }
+    .node-connector.node-native .hint { color: rgba(255,255,255,0.85); }
+
+    /* Same treatment as .node-module.node-custom — white fill, pink border, pink-dark label */
+    .node-connector.node-custom { background: transparent; border-color: var(--vtex-pink); }
+    .node-connector.node-custom strong { color: var(--vtex-pink-dark); }
+    .node-connector.node-custom .hint { color: var(--ink-soft); opacity: 1; }
+
+    /* Core + right-rail connector layout.
+       The rail should match the vertical size of the VTEX Account (.core) box only —
+       not the WAF/CDN + entry-channels content above it — so .core-top sits alone in row 1
+       (left column only) and .core / .connector-rail share row 2, where grid stretch equalizes their heights. */
+    .core-row {
+      display: grid;
+      grid-template-columns: 3fr 1.05fr;
+      grid-template-areas: "coretop ." "core rail";
+      gap: 4px 10px;
+      align-items: stretch;
+    }
+    .core-top { grid-area: coretop; display: flex; flex-direction: column; }
+    .core { grid-area: core; }
+    .rail-stack { grid-area: rail; display: flex; flex-direction: column; gap: 10px; }
+    .connector-rail {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-alt);
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .connector-rail .layer-label { margin-bottom: 0; display: flex; flex-direction: column; gap: 4px; }
+    .connector-rail .layer-label .tag { align-self: flex-start; margin-top: 2px; }
+    .connector-rail .connector-wrap { flex: 1; display: flex; margin-top: 10px; border: none; background: transparent; padding: 0; }
+    .connector-rail .connector-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; align-content: start; width: 100%; }
+    .connector-rail .node-connector { min-height: 54px; }
+
+    @media (max-width: 1200px) {
+      .core-row { grid-template-columns: 1fr; grid-template-areas: "coretop" "core" "rail"; }
+      .connector-rail .connector-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .integ-bar {
+      margin-top: 4px;
+      background: var(--integ);
+      border: 1.5px solid var(--integ-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .integ-bar strong { font-size: 13px; }
+    .integ-bar .hint { font-size: 11px; color: var(--ink-soft); }
+
+    .enterprise-block { margin-top: 4px; }
+    .enterprise-wrap { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 10px; }
+    .enterprise-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; align-items: stretch; }
+    .node-enterprise { background: var(--surface-alt); min-height: 78px; }
+
+    /* Boomi + Corporate systems match the VTEX Account box's width (same fr ratio as .core-row).
+       Boomi bar sits alone in row 1 (left column only, same width as the VTEX Account box);
+       Corporate systems and Marketing data feed share row 2 so their labels line up. */
+    .boomi-row {
+      display: grid;
+      grid-template-columns: 3fr 1.05fr;
+      grid-template-areas: "boomitop ." "corp sfmc";
+      gap: 4px 10px;
+      align-items: stretch;
+    }
+    .boomi-top { grid-area: boomitop; }
+    .enterprise-block { grid-area: corp; margin-top: 0; }
+    .sfmc-rail {
+      grid-area: sfmc;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      background: var(--surface-alt);
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .sfmc-rail .node-enterprise { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 60px; }
+    .source-line { display: block; font-size: 9px; color: var(--ink-soft); font-style: italic; opacity: 0.85; margin-bottom: 4px; }
+
+    @media (max-width: 1200px) {
+      .boomi-row { grid-template-columns: 1fr; grid-template-areas: "boomitop" "corp" "sfmc"; }
+    }
+
+    .decommissioned-strip {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--decom-bg);
+      border: 1px dashed var(--decom-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .decommissioned-strip .strip-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--decom); white-space: nowrap; }
+    .decommissioned-strip .node { flex: 1; min-width: 150px; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 14px 22px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-muted); }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .swatch { width: 16px; height: 12px; border-radius: 3px; border: 1px solid var(--border); }
+    .swatch.pink { background: var(--vtex-pink); border-color: var(--vtex-pink); }
+    .swatch.channel { background: var(--channel); }
+    .swatch.integ { background: var(--integ); border-color: var(--integ-border); }
+    .swatch.internal { background: var(--vtex-pink-muted); border-color: var(--vtex-pink-border); }
+    .swatch.external { background: var(--surface-alt); border-color: var(--border-strong); }
+    .swatch.decom { background: var(--decom-bg); border: 1px dashed var(--decom-border); }
+
+    /* —— Detail sections below —— */
+    .details { margin-top: 32px; }
+    .details > h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+    .details > h2::before { content: ""; width: 4px; height: 18px; background: var(--vtex-pink); border-radius: 2px; }
+    .details > p.intro { font-size: 13px; color: var(--ink-muted); margin-bottom: 18px; }
+
+    .detail-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px 26px; box-shadow: var(--shadow); margin-bottom: 20px; }
+    .detail-section h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .detail-section .sec-intro { font-size: 12.5px; color: var(--ink-muted); margin-bottom: 16px; }
+
+    .iface-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; background: var(--surface-alt); display: grid; grid-template-columns: 90px 1fr; gap: 14px; align-items: start; }
+    .iface-card:last-child { margin-bottom: 0; }
+    .iface-card .id-col { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .iface-card .body h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .iface-card .body .ref { font-size: 12px; color: var(--ink-muted); margin-bottom: 8px; }
+    .iface-card .body .ref strong { color: var(--vtex-pink-dark); }
+    .calls { display: flex; flex-wrap: wrap; gap: 6px; }
+    .call { font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 6px; border: 1px solid; }
+    .call-out { color: var(--out); background: #FFFAEB; border-color: #FEDF89; }
+    .call-in { color: var(--in); background: #ECFDF3; border-color: #A6F4C5; }
+    .call-note { color: var(--ink-soft); background: var(--surface); border-color: var(--border); font-weight: 500; }
+    .call-open { color: #B54708; background: #FFFAEB; border-color: #FEDF89; font-weight: 700; }
+
+    .glossary { margin-top: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; box-shadow: var(--shadow); }
+    .glossary h2 { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .glossary h2::before { content: ""; width: 4px; height: 16px; background: var(--vtex-pink); border-radius: 2px; }
+    .glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+    .term { padding: 10px 12px; border-radius: 8px; background: var(--surface-alt); border: 1px solid var(--border); }
+    .term dt { font-size: 12px; font-weight: 700; color: var(--vtex-pink-dark); margin-bottom: 3px; }
+    .term dd { font-size: 11.5px; color: var(--ink-muted); margin: 0; }
+
+    footer.page-footer { margin-top: 28px; text-align: center; font-size: 11px; color: var(--ink-soft); }
+    footer.page-footer strong { color: var(--vtex-pink); }
+
+    @media (max-width: 1200px) {
+      .channels, .connector-grid { grid-template-columns: repeat(2, 1fr); }
+      .enterprise-row { grid-template-columns: repeat(2, 1fr); }
+      .groups { grid-template-columns: 1fr; }
+      .module-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+      .module-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+      .module-grid.cols-5 { grid-template-columns: repeat(3, 1fr); }
+      .iface-card { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body { background: #fff; padding: 8px; }
+      .diagram-wrap, .detail-section, .glossary { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div>
+        <div class="vtex-mark">
+          <svg width="28" height="20" viewBox="0 0 28 20" aria-hidden="true">
+            <path fill="#F71963" d="M2 2h8.5l3.5 8.2L17.5 2H26l-8.5 16H9.5L2 2z"/>
+          </svg>
+          VTEX Architecture · Draft v1
+        </div>
+        <h1>Arbonne International — Direct-Selling Commerce Platform</h1>
+        <p class="subtitle">
+          Solution architecture drafted for the RFP demo / deep-dive workshop track. Pink = VTEX-native modules,
+          gray = Arbonne's existing third-party systems being kept, red dashed = systems being decommissioned.
+          Interface details and open assumptions are documented below the diagram.
+        </p>
+      </div>
+      <div class="badges">
+        <div class="meta-badge"><span>Markets</span>6 markets · 8 bindings</div>
+        <div class="meta-badge"><span>Scale</span>~$274.8M ARR · ~120K orders/mo</div>
+        <div class="meta-badge"><span>Hard deadline</span>SAP CC contract exp. Oct 2027</div>
+      </div>
+    </header>
+
+    <!-- ===================== DIAGRAM ===================== -->
+    <div class="diagram-wrap">
+      <div class="main-grid">
+
+        <!-- CORE + NATIVE PAYMENT / FRAUD / TAX CONNECTORS (right rail) -->
+        <div class="core-row">
+        <div class="core-top">
+
+          <div class="cdn-stack">
+            <div class="cdn-bar vtex">
+              <div class="cdn-line">WAF (VTEX) <span>OOTB — perimeter security, DDoS/bot protection</span></div>
+              <div class="cdn-line">VTEX CDN <span>Edge · cache · TLS 1.3 — storefront / webview traffic</span></div>
+            </div>
+          </div>
+
+          <div class="flow-down bidir" aria-hidden="true" style="margin-top:4px;">
+            <div class="head-up"></div>
+            <div class="shaft"></div><div class="head"></div>
+            <span class="tag">REF-05</span>
+          </div>
+
+          <div class="layer-label" style="margin-top:0;">Customer &amp; consultant entry channels</div>
+          <div class="channels" style="grid-template-columns: 1fr;">
+            <div class="node node-internal">
+              <strong>Storefront (FastStore)</strong>
+              <div class="storefront-features">
+                <div class="feature-box pink">6 countries</div>
+                <div class="feature-box pink">4 languages</div>
+                <div class="feature-box pink">Guest journey</div>
+                <div class="feature-box">Consultant-replicated</div>
+                <div class="feature-box">Recommended Cart</div>
+                <div class="feature-box">Price Table Selection</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flow-down bidir" aria-hidden="true" style="margin-top:4px;">
+            <div class="head-up"></div>
+            <div class="shaft"></div><div class="head"></div>
+            <span class="tag">REF-01</span>
+          </div>
+        </div>
+
+        <div class="core">
+          <div class="core-title">Arbonne Commerce Platform — <em>VTEX Account</em></div>
+
+          <div class="groups">
+            <div class="group">
+              <div class="group-title">VTEX Core Modules</div>
+              <div class="module-grid">
+                <div class="node node-module"><strong>VTEX ID</strong><span class="hint">Auth · SSO for VTEX and external systems</span></div>
+                <div class="node node-module">
+                  <strong>Catalog</strong>
+                  <div class="storefront-sub">
+                    <span class="sub-pink">Catalog Translations <em>Multi-language</em></span>
+                  </div>
+                </div>
+                <div class="node node-module"><strong>Pricing</strong><span class="hint">Guest / PC / VIP / IC price tables</span></div>
+                <div class="node node-module">
+                  <strong>Promotions</strong>
+                  <span class="hint">Stacking, sponsor rules · non-QV only</span>
+                  <div class="storefront-sub">
+                    <span class="sub-pink">Loyalty</span>
+                  </div>
+                </div>
+                <div class="node node-module"><strong>Intelligent Search</strong><span class="hint">Replaces Solr</span></div>
+                <div class="node node-module"><strong>CMS &amp; Localization</strong><span class="hint">6 markets · 4+ languages</span></div>
+                <div class="node node-module"><strong>Commercial Policies</strong><span class="hint">4-tier pricing per country — Guest baked into the policy + PC/VIP/IC tables</span></div>
+                <div class="node node-module"><strong>CX Platform</strong><span class="hint">Pre-order consultant content assist (images/audio) + post-purchase CSR return/change flows <span class="call call-open" style="font-size:8.5px;padding:2px 5px;">open</span></span></div>
+              </div>
+            </div>
+            <div class="group">
+              <div class="group-title">Direct-Selling / MLM Commerce</div>
+              <div class="module-grid cols-3">
+                <div class="node node-module node-custom"><strong>Sponsor Attribution</strong><span class="hint">Replicated sites <span class="call call-open" style="font-size:8.5px;padding:2px 5px;">open</span></span></div>
+                <div class="node node-module node-custom"><strong>Guest Attribution</strong><span class="hint">"Pending Assignment" CID=1</span></div>
+                <div class="node node-module node-custom"><strong>Consultant Locator (Custom)</strong><span class="hint">Search IC by zip/name/rank</span></div>
+                <div class="node node-module node-custom"><strong>Onboarding Flow</strong><span class="hint">3 enrollment paths (Guest, PC, IC)</span></div>
+                <div class="node node-module node-custom"><strong>Promotions QV</strong><span class="hint">Any promo condition involving QV routes here instead of the native engine</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="group full">
+            <div class="group-title">Transactional modules</div>
+            <div class="module-grid cols-4">
+              <div class="node node-module"><strong>Checkout</strong><span class="hint">Guest, split pay, 3DS UK/PL</span></div>
+              <div class="node node-module"><strong>Subscriptions</strong><span class="hint">ReplenishMe / Autoship</span></div>
+              <div class="node node-module"><strong>Order / ASM Queues</strong><span class="hint">12+ queues, 20+ reason codes · primary CSR console</span></div>
+              <div class="node node-module"><strong>Inventory Sync</strong><span class="hint">Real-time OOS/backorder</span></div>
+              <div class="node node-module">
+                <strong>Event Fulfillment</strong>
+                <span class="hint">Pre-allocated stock, pickup logistics</span>
+                <div class="storefront-sub">
+                  <span class="sub-pink">POS / Event Cart <em>GTC events</em></span>
+                </div>
+              </div>
+              <div class="node node-module"><strong>Returns</strong><span class="hint">RMA, refund workflow</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rail-stack">
+          <div class="connector-rail">
+            <div class="layer-label">
+              <span>Payment · fraud · tax connectors <span style="text-transform:none;letter-spacing:0;font-weight:500;">(kept vendors, VTEX App Store connectors)</span></span>
+              <span class="tag">REF-10…14</span>
+            </div>
+            <div class="connector-wrap">
+              <div class="connector-grid">
+                <div class="node node-connector node-custom"><strong>Vertex</strong><span class="hint">Tax engine</span></div>
+                <div class="node node-connector node-custom"><strong>Signifyd</strong><span class="hint">Fraud · OOTB via Antifraud Provider Protocol</span></div>
+                <div class="node node-connector node-external"><strong>BlueSnap</strong><span class="hint">PSP · tokenized vaulting <span class="call call-open" style="font-size:8px;padding:1px 4px;">evaluate</span></span></div>
+                <div class="node node-connector node-custom"><strong>Klarna</strong><span class="hint">BNPL · OOTB payment method</span></div>
+                <div class="node node-connector node-custom"><strong>SmartyStreets</strong><span class="hint">Address validation</span></div>
+                <div class="node node-connector node-custom"><strong>Apple / Google Pay</strong><span class="hint">+ BLIK candidate (PL)</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="connector-rail">
+            <div class="layer-label">
+              <span>Direct platform integrations <span style="text-transform:none;letter-spacing:0;font-weight:500;">(new — direct with the VTEX Account, not via Boomi)</span></span>
+              <span class="tag">REF-15</span>
+            </div>
+            <div class="connector-wrap">
+              <div class="connector-grid" style="grid-template-columns: 1fr;">
+                <div class="node node-connector node-external">
+                  <strong>GA4</strong>
+                  <span class="hint">Kept — already implemented, history preserved</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- INTEGRATION LAYER -->
+        <div class="boomi-row">
+          <div class="boomi-top">
+            <div class="flow-down bidir" aria-hidden="true" style="margin-top:4px;">
+              <div class="head-up"></div>
+              <div class="shaft"></div><div class="head"></div>
+              <span class="tag">REF-20</span>
+            </div>
+            <div class="integ-bar">
+              <strong>Boomi</strong>
+              <span class="hint">Kept as orchestration / iPaaS layer for corporate systems</span>
+              <span class="call call-open" style="font-size:9px;">ownership model open</span>
+            </div>
+          </div>
+
+          <div class="enterprise-block">
+            <div class="layer-label">Corporate systems <span style="text-transform:none;letter-spacing:0;font-weight:500;">(via Boomi)</span></div>
+            <div class="enterprise-wrap">
+              <div class="enterprise-row">
+                <div class="node node-enterprise node-external">
+                  <strong>Exigo</strong>
+                  <span class="hint">MLM genealogy &amp; commissions · RV/QV/CV calc consumed every ~2 min · payout via HyperWallet (US/CA), direct bank (AU/NZ/PL/UK)</span>
+                </div>
+                <div class="node node-enterprise node-external">
+                  <strong>Oracle EBS</strong>
+                  <span class="hint">WMS, inventory, shipping, order fulfillment</span>
+                </div>
+                <div class="node node-enterprise node-external">
+                  <strong>OneTrust</strong>
+                  <span class="hint">Consent mgmt — new, replaces SAP CDC; must migrate consent history</span>
+                </div>
+                <div class="node node-enterprise node-external">
+                  <strong>AWS Redshift / Fivetran / dbt</strong>
+                  <span class="hint">Data lake &amp; warehouse — push not just pull (REQ-037)</span>
+                </div>
+                <div class="node node-enterprise node-external">
+                  <strong>Carrier APIs</strong>
+                  <span class="hint">UPS, FedEx, Canada Post, Australia Post</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sfmc-rail">
+            <div class="layer-label">Marketing data feed <span class="tag" style="margin-top:2px;">REF-24</span></div>
+            <div class="node node-enterprise node-external">
+              <span class="source-line">↓ AWS Redshift / Fivetran / dbt</span>
+              <strong>Salesforce Marketing Cloud</strong>
+              <span class="hint">Marketing/messaging — fed by the warehouse pipeline, not Boomi. No direct VTEX interface. <span class="call call-open" style="font-size:9px;">open</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DECOMMISSIONED -->
+        <div class="decommissioned-strip">
+          <span class="strip-label">Decommissioned</span>
+          <div class="node node-decommissioned"><strong>SAP Commerce Cloud (Hybris / ACE)</strong><span class="hint">Replaced by VTEX Account</span></div>
+          <div class="node node-decommissioned"><strong>Solr</strong><span class="hint">Replaced by VTEX Intelligent Search</span></div>
+          <div class="node node-decommissioned"><strong>SAP CDC</strong><span class="hint">Replaced by OneTrust + VTEX identity</span></div>
+          <div class="node node-decommissioned"><strong>SAP S/4HANA</strong><span class="hint">GL &amp; financial reporting — replacement system TBD</span></div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="swatch channel"></span> Entry channels</div>
+        <div class="legend-item"><span class="swatch pink"></span> VTEX-native modules</div>
+        <div class="legend-item"><span class="swatch integ"></span> Integration layer (Boomi)</div>
+        <div class="legend-item"><span class="swatch internal"></span> VTEX Account layer</div>
+        <div class="legend-item"><span class="swatch external"></span> Arbonne's existing systems (kept)</div>
+        <div class="legend-item"><span class="swatch decom"></span> Decommissioned this migration</div>
+      </div>
+    </div>
+
+    <!-- ===================== INTERFACE DESCRIPTIONS ===================== -->
+    <div class="details">
+      <h2>Interface descriptions</h2>
+      <p class="intro">Each diagram tag maps to a card below: what's exchanged, which system owns it, and what is still open per the RFP.</p>
+
+      <section class="detail-section">
+        <h3>Entry channels → VTEX</h3>
+        <p class="sec-intro">How consultants, guests, and event shoppers reach the platform.</p>
+
+        <div class="iface-card" id="REF-01">
+          <div class="id-col"><span class="tag">REF-01</span></div>
+          <div class="body">
+            <h4>Storefront (FastStore) → VTEX Account</h4>
+            <p class="ref">VTEX: <strong>Storefront</strong> · Sponsor Attribution · Guest Attribution · Commercial Policies · Checkout — one storefront, 8 bindings (language + currency)</p>
+            <div class="calls">
+              <span class="call call-out">→ Guest checkout, no consultant selected (lands on "Pending Assignment" CID=1 if entering via arbonne.com directly, or attributed to a specific IC if entering via that IC's slug)</span>
+              <span class="call call-out">→ Personalized/replicated experience per consultant via slug + sponsor cookie, on the same storefront</span>
+              <span class="call call-in">← IC-tier pricing, Favorites, Recommended Cart</span>
+              <span class="call call-note">Attribution persists across login/logout; if a shopper clicks Consultant A's link but checks out via Consultant B's, B gets credit. Guest customers can also choose a consultant on a later order.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-05">
+          <div class="id-col"><span class="tag">REF-05</span></div>
+          <div class="body">
+            <h4>WAF (VTEX) → VTEX CDN → VTEX Account</h4>
+            <p class="ref">VTEX-native WAF, OOTB, fronts perimeter security; VTEX CDN fronts the Store Framework origin</p>
+            <div class="calls">
+              <span class="call call-out">→ HTTPS routed + session, TLS 1.3 minimum</span>
+              <span class="call call-in">← SSR / static assets</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>Native payment · fraud · tax connectors</h3>
+        <p class="sec-intro">Kept vendors, integrated as native/App Store connectors rather than through Boomi.</p>
+
+        <div class="iface-card" id="REF-10">
+          <div class="id-col"><span class="tag">REF-10</span></div>
+          <div class="body">
+            <h4>Checkout → BlueSnap</h4>
+            <p class="ref">VTEX: <strong>Checkout</strong> · <strong>Subscriptions</strong></p>
+            <div class="calls">
+              <span class="call call-out">→ Card auth / capture, $0-auth vaulting (Create Vaulted Shopper) for saved cards &amp; ReplenishMe tokenized billing</span>
+              <span class="call call-in">← Auth/capture result, chargeback events (via Chargeback911)</span>
+              <span class="call call-note">Up to 3 saved cards, up to 6 payment methods split per order</span>
+              <span class="call call-open">VTEX Subscriptions requires the PSP to support tokenized-card + merchant-initiated recurring charges on VTEX's connector specifically — confirm BlueSnap's VTEX connector supports this before assuming it works out of the box; if not, a second PSP would be needed for ReplenishMe only</span>
+              <span class="call call-open">Evaluate whether BlueSnap needs to remain a dedicated, separately-maintained PSP long-term, or whether VTEX's native payment stack / another certified gateway can consolidate this role</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-11">
+          <div class="id-col"><span class="tag">REF-11</span></div>
+          <div class="body">
+            <h4>Checkout → Signifyd</h4>
+            <p class="ref">OOTB via VTEX: <strong>Antifraud Provider Protocol</strong> — VTEX's native connector framework (same family as the Payment Provider Protocol); Signifyd plugs in as a certified connector, same API/webhook contract as today</p>
+            <div class="calls">
+              <span class="call call-out">→ SALE API (submit for fraud evaluation), Record Return API, REFUND API</span>
+              <span class="call call-in">← Webhook "Decision Made" (approve/decline + score), Webhook "Case Review" (manual review outcome)</span>
+              <span class="call call-note">Async queue: SLA 4h, typical response 1–1.5s; declines route to CSA manual review in Signifyd Console; not integrated with Exigo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-12">
+          <div class="id-col"><span class="tag">REF-12</span></div>
+          <div class="body">
+            <h4>Checkout → Vertex</h4>
+            <p class="ref">VTEX: <strong>Checkout</strong> — tax calculation by market</p>
+            <div class="calls">
+              <span class="call call-out">→ Taxable amount request by shipping address / market rules</span>
+              <span class="call call-in">← Tax/GST amount; VAT-inclusive pricing configured in the commerce system for international markets</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-13">
+          <div class="id-col"><span class="tag">REF-13</span></div>
+          <div class="body">
+            <h4>Checkout → Payment methods (Klarna, Apple Pay, Google Pay, BLIK)</h4>
+            <p class="ref">Klarna is OOTB as a native VTEX payment method — 150+ payment-provider connectors available</p>
+            <div class="calls">
+              <span class="call call-out">→ Klarna required in all 6 markets; Apple Pay/Google Pay/CC everywhere</span>
+              <span class="call call-note">BLIK (Poland) requested as an open enhancement beyond current method set</span>
+              <span class="call call-open">Confirm whether Klarna processes directly as a native VTEX payment method or is routed through BlueSnap as the underlying gateway</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-14">
+          <div class="id-col"><span class="tag">REF-14</span></div>
+          <div class="body">
+            <h4>Checkout → SmartyStreets</h4>
+            <p class="ref">Real-time address validation at checkout — native, VTEX-certified connector, replacing PostGrid</p>
+            <div class="calls">
+              <span class="call call-in">← Validated/normalized address</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>Direct platform integrations <span class="call call-note" style="font-size:9.5px;">new</span></h3>
+        <p class="sec-intro">GA4 connects straight to the VTEX Account — no Boomi hop.</p>
+
+        <div class="iface-card" id="REF-15">
+          <div class="id-col"><span class="tag">REF-15</span></div>
+          <div class="body">
+            <h4>VTEX Account → GA4</h4>
+            <p class="ref">Web analytics — kept, already implemented on the current site</p>
+            <div class="calls">
+              <span class="call call-out">→ Page/event tracking, direct from the storefront (no Boomi hop)</span>
+              <span class="call call-note">Historical data preserved/migrated; separate prod/non-prod tracking containers</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>CSR &amp; back-office</h3>
+        <p class="sec-intro">Customer-service visibility for the direct-selling model.</p>
+
+        <div class="iface-card" id="REF-30">
+          <div class="id-col"><span class="tag">REF-30</span></div>
+          <div class="body">
+            <h4>CSR console → Order / ASM Queues</h4>
+            <p class="ref">VTEX: <strong>Order / ASM Queues</strong> — native ASM is the primary CSR console (12+ queues, 20+ reason codes)</p>
+            <div class="calls">
+              <span class="call call-note">Impersonation (CSR/admin view-as-shopper) was removed from initial scope — "shop as customer" support for CSR is currently out of scope / open</span>
+              <span class="call call-open">Native ASM/back-office screens will not reflect Exigo's true commission/genealogy state unless the bridging layer flagged in REF-21 is built — mandatory scope for CSR to have accurate data, not a nice-to-have</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>Integration layer</h3>
+        <p class="sec-intro">Boomi remains the orchestration layer between VTEX and Arbonne's corporate systems.</p>
+
+        <div class="iface-card" id="REF-20">
+          <div class="id-col"><span class="tag">REF-20</span></div>
+          <div class="body">
+            <h4>VTEX Account → Boomi → Corporate systems (REF-21…27)</h4>
+            <p class="ref">Transversal for Exigo, Oracle EBS, OneTrust, data pipeline. Not used by REF-01…15 (native/direct connectors) — GA4 now integrates directly (REF-15), bypassing Boomi.</p>
+            <div class="calls">
+              <span class="call call-out">→ GET/POST/webhooks</span>
+              <span class="call call-note">All core integrations (EMS, Oracle, Boomi, Signifyd, BlueSnap, Fivetran) must also exist in test/staging per RFP</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-21">
+          <div class="id-col"><span class="tag">REF-21</span></div>
+          <div class="body">
+            <h4>Exigo — MLM genealogy &amp; commissions</h4>
+            <p class="ref">VTEX owns the shopping experience; Exigo keeps genealogy/commissions/back-office reporting</p>
+            <div class="calls">
+              <span class="call call-out">POST → Order, RV/QV/CV (calculated in the commerce system at order time, proportionally reduced by promos), returns/clawback data</span>
+              <span class="call call-in">← Consultant status (active/terminated) pushed to profile — no real-time call during shopping</span>
+              <span class="call call-note">Data flows to Exigo every ~2 minutes; final statement only after Exigo's month-end close; payout via HyperWallet (US/CA, SFTP), HSBC (AU/NZ/PL), Bank of America (UK)</span>
+              <span class="call call-open">Exigo itself may be a separate RFP track — ownership/scope split to confirm</span>
+              <span class="call call-open">Native ASM/back-office screens will not reflect Exigo's true commission/genealogy state unless a bridging layer is built — treat this as mandatory scope, not a nice-to-have, or CSR-facing data will be misleading</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-22">
+          <div class="id-col"><span class="tag">REF-22</span></div>
+          <div class="body">
+            <h4>Oracle EBS — fulfillment, WMS, inventory</h4>
+            <p class="ref">VTEX: <strong>Inventory Sync</strong> · <strong>Order / ASM Queues</strong></p>
+            <div class="calls">
+              <span class="call call-out">POST → Order for distribution/fulfillment (VTEX Order Feed/Hook — Feed must be active before the Hook can be registered)</span>
+              <span class="call call-in">← Inventory availability, backorder cancellation → auto-generated RMA back to commerce platform</span>
+              <span class="call call-open">Formal OMS system-of-record boundary vs. EBS-as-fulfillment-only is unconfirmed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-23">
+          <div class="id-col"><span class="tag">REF-23</span><span class="call call-note" style="font-size:9.5px;">decommissioned</span></div>
+          <div class="body">
+            <h4>SAP S/4HANA — GL &amp; financial reporting</h4>
+            <p class="ref">Previously: order data → GL file generation. S/4HANA is now marked decommissioned in this architecture.</p>
+            <div class="calls">
+              <span class="call call-note">Legacy flow was: → Order/financial data feed for GL posting</span>
+              <span class="call call-open">Replacement system of record for GL/financial reporting integration not yet defined</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-24">
+          <div class="id-col"><span class="tag">REF-24</span><span class="call call-note" style="font-size:9.5px;">no VTEX interface</span></div>
+          <div class="body">
+            <h4>AWS Redshift / Fivetran / dbt → Salesforce Marketing Cloud (SFMC)</h4>
+            <p class="ref">Marketing/messaging — abandoned cart, campaigns. Fed downstream of the data warehouse, not from the commerce platform or Boomi directly.</p>
+            <div class="calls">
+              <span class="call call-out">→ Daily batch today: customer/order/product data, pushed from the warehouse pipeline</span>
+              <span class="call call-open">Real-time event capability for abandoned-cart/beacon tracking not yet formalized — would need to flow through the AWS Redshift/Fivetran/dbt pipeline since there's no direct VTEX↔SFMC interface</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-25">
+          <div class="id-col"><span class="tag">REF-25</span></div>
+          <div class="body">
+            <h4>OneTrust — consent management (new)</h4>
+            <p class="ref">Replaces SAP CDC for consent/privacy management</p>
+            <div class="calls">
+              <span class="call call-out">→ Consent capture: privacy, IC agreement, Autoship agreement, communications</span>
+              <span class="call call-note">Consent history must migrate from SAP CDC at cutover; retention window to confirm with legal</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="iface-card" id="REF-27">
+          <div class="id-col"><span class="tag">REF-27</span></div>
+          <div class="body">
+            <h4>AWS Redshift / Fivetran / dbt — data lake &amp; warehouse</h4>
+            <p class="ref">VTEX: <strong>Data &amp; Reporting</strong> — direct read-only replica/warehouse export required, not API-only</p>
+            <div class="calls">
+              <span class="call call-out">→ Push to S3/Redshift (scheduled export or managed data share)</span>
+              <span class="call call-in">← Full historical order/customer data exposed at go-live; near-real-time sales metrics, hourly/daily refresh for other attributes</span>
+              <span class="call call-open">CSR-only vs. buyer-facing exposure of historical data still undecided</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="glossary">
+      <h2>Glossary</h2>
+      <dl class="glossary-grid">
+        <div class="term"><dt>RV / QV / CV</dt><dd>Retail Value / Qualifying Value / Commissionable Value — SKU-level attributes used by Exigo for commission calc; must be proportionally recalculated when discounts apply.</dd></div>
+        <div class="term"><dt>ASM</dt><dd>Arbonne's order/store admin console — manages queues (On-Hold, Fraud, Cooling Off UK, Needs CSR Attention, Re-Evaluated, etc.).</dd></div>
+        <div class="term"><dt>CID=1 / Pending Assignment</dt><dd>Placeholder customer/consultant ID used when a guest checks out with no sponsor attribution.</dd></div>
+        <div class="term"><dt>ReplenishMe</dt><dd>Arbonne's Autoship / subscription program — must-have at launch, incl. self-service pause/skip/cancel and subscription reporting.</dd></div>
+        <div class="term"><dt>Guest / PC / VIP / IC</dt><dd>Four customer pricing tiers, one price table each per country: Guest (baked into the commercial policy), Preferred Client (PC discount), VIP (legacy tier, no new enrollment but still priced), and Independent Consultant (IC discount).</dd></div>
+      </dl>
+    </section>
+
+    <footer class="page-footer">
+      <strong>Draft v1</strong> · VTEX Rebel Pink <strong>#F71963</strong>
+      · Diagram = boxes + tags · Details below = system ownership + data exchanged · Sources: RFP main doc, Requirement Matrix (540 reqs), Order Flows, Q&amp;A Batches 1 &amp; 3, Demo Strategy
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = 'arbonneVtexDiagram.discussed.v1';
+
+      // localStorage may be unavailable (privacy mode, sandboxed preview, etc.) — degrade to in-memory only.
+      var memoryStore = {};
+      var storage = {
+        get: function () {
+          try {
+            return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+          } catch (e) {
+            return memoryStore;
+          }
+        },
+        set: function (data) {
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          } catch (e) {
+            memoryStore = data;
+          }
+        }
+      };
+
+      var clickable = Array.prototype.slice.call(
+        document.querySelectorAll('.diagram-wrap .node, .diagram-wrap .cdn-bar, .diagram-wrap .integ-bar')
+      );
+
+      // Stable key per box: its own position among clickable boxes (order doesn't change between loads of this file).
+      clickable.forEach(function (el, i) { el.dataset.boxKey = 'box-' + i; });
+
+      function applyState() {
+        var state = storage.get();
+        clickable.forEach(function (el) {
+          el.classList.toggle('discussed', !!state[el.dataset.boxKey]);
+        });
+      }
+
+      clickable.forEach(function (el) {
+        el.addEventListener('click', function () {
+          var state = storage.get();
+          var key = el.dataset.boxKey;
+          state[key] = !state[key];
+          storage.set(state);
+          el.classList.toggle('discussed', !!state[key]);
+        });
+      });
+
+      var resetBtn = document.getElementById('resetProgressBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          storage.set({});
+          clickable.forEach(function (el) { el.classList.remove('discussed'); });
+        });
+      }
+
+      applyState();
+    })();
+  </script>
+</body>
+</html>
